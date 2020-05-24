@@ -38,5 +38,32 @@ namespace Hangfire.WebApi.Controllers
             //Logic to Mail the user
             Console.WriteLine($"Welcome to our application, {userName}");
         }
+        [HttpPost]
+        [Route("invoice")]
+        public IActionResult Invoice(string userName)
+        {
+            RecurringJob.AddOrUpdate(() => SendDelayedWelcomeMail(userName), Cron.Monthly);
+            return Ok($"Recurring Job Scheduled. Invoice will be mailed Monthly for {userName}!");
+        }
+
+        public void SendInvoiceMail(string userName)
+        {
+            //Logic to Mail the user
+            Console.WriteLine($"Here is your invoice, {userName}");
+        }
+        [HttpPost]
+        [Route("unsubscribe")]
+        public IActionResult Unsubscribe(string userName)
+        {
+            var jobId = BackgroundJob.Enqueue(() => UnsubscribeUser(userName));
+            BackgroundJob.ContinueJobWith(jobId, () => Console.WriteLine($"Sent Confirmation Mail to {userName}"));
+            return Ok($"Unsubscribed");
+        }
+
+        public void UnsubscribeUser(string userName)
+        {
+            //Logic to Unsubscribe the user
+            Console.WriteLine($"Unsubscribed {userName}");
+        }
     }
 }
